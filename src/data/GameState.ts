@@ -12,7 +12,7 @@ export class InProgress implements GameState {
         public score: Score,
         public time: string,
         public homeTeamPossession: boolean | undefined,
-        public status: string,
+        public situation: string,
     ) {
     }
 }

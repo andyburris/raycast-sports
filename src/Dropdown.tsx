@@ -1,34 +1,21 @@
 import { List } from "@raycast/api";
+import { Category, League, Preset, readableCategoryName } from "./data/League";
 
-export enum League {
-    Favorites="favorites",
-    MLB="mlb",
-    NFL="nfl",
-    NBA="nba",
-    NHL="nhl",
-    MLS="mls", 
-}
 
-function readableLeagueName(league: League): string {
-    switch(league) {
-        case League.Favorites: return "Favorites";
-        case League.MLB: return "MLB";
-        case League.NFL: return "NFL";
-        case League.NBA: return "NBA";
-        case League.NHL: return "NHL";
-        case League.MLS: return "MLS";
-    } 
-} 
 
-export function LeagueDropdown({ currentLeague, onLeagueChange }: { currentLeague: League, onLeagueChange: (league: League) => void }) {
+export function CategoryDropdown({ currentCategory, onCategoryChange }: { currentCategory: Category, onCategoryChange: (league: Category) => void }) {
     return (
-        <List.Dropdown
-            value={currentLeague}
-            tooltip="Select league"
-            onChange={s => onLeagueChange(s as League)}>
-            {Object.values(League).map(l =>
-                <List.Dropdown.Item title={readableLeagueName(l)} value={l} key={l}/>
-            )}
-        </List.Dropdown>
+		<List.Dropdown
+			value={currentCategory}
+			tooltip="Select league"
+			onChange={s => onCategoryChange(s as Category)}
+		>
+			<List.Dropdown.Item title={readableCategoryName(Preset.Favorites)} value={Preset.Favorites} key={Preset.Favorites}/>
+			<List.Dropdown.Section title="Leagues">
+				{Object.values(League).map(l =>
+					<List.Dropdown.Item title={readableCategoryName(l)} value={l} key={l}/>
+				)}
+			</List.Dropdown.Section>
+		</List.Dropdown>
     )
 }

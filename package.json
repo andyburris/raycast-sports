@@ -2,8 +2,8 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "sports",
   "title": "Sports",
-  "description": "Easily check ",
-  "icon": "command-icon.png",
+  "description": "Easily check sports scores from the NFL, NBA, MLB, NHL, and MLS",
+  "icon": "extension_icon.png",
   "author": "andyburris",
   "categories": [
     "Data"
