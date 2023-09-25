@@ -41,6 +41,9 @@ export class Game {
     
     public description(): string {
         if (this.gameState instanceof InProgress) {
+			if (this.gameState.situation.trim() == "") {
+				return this.gameState.time
+			}
 			return `${this.gameState.situation} ∙ ${this.gameState.time}`
         } else if (this.gameState instanceof Final) {
 			return "Final ∙ " + this.gameState.scheduledDate.toLocaleDateString("en-us", dateFormat)

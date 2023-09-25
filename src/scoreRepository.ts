@@ -17,10 +17,11 @@ export function getScoresFor(category: Category): UseCachedPromiseReturnType<Arr
 function getScoresForLeague(league: League): UseCachedPromiseReturnType<Array<Game>, undefined> {
     const endpoint = getEndpointForLeague(league)
     return useFetch(endpoint, {
+		keepPreviousData: true,
         parseResponse: (response) => {
             return response.json()
                 .then(obj => (obj["events"] as Array<any>).map(e => parseEvent(e, league)))
-        }
+        },
     })
 }
 

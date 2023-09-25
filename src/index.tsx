@@ -8,14 +8,20 @@ import { Game } from "./data/Game";
 import { Category, League, Preset } from "./data/League";
 
 export default function Command() {
-  const [currentCategory, onCategoryChange] = useState<Category>(League.NFL);
-  const { isLoading, data, revalidate } = getScoresFor(currentCategory);
-  const [isShowingDetail, setShowingDetail] = useState(false);
+	const [currentCategory, onCategoryChange] = useState<Category>(League.NFL);
+	const { isLoading, data, revalidate } = getScoresFor(currentCategory);
+	const [isShowingDetail, setShowingDetail] = useState(false);
 	useEffect(() => console.log(data), [data])
-  const inProgressGames: Game[] = useMemo(() => data?.filter((g) => g.gameState instanceof InProgress) ?? [], [data]);
-  const pastGames: Game[] = useMemo(() => data?.filter((g) => g.gameState instanceof Final) ?? [], [data]);
-  const futureGames: Game[] = useMemo(() => data?.filter((g) => g.gameState instanceof Scheduled) ?? [], [data]);
-  return (
+	const [games, setGames] = useState<Game[]>([])
+	useEffect(() => {
+		if (data != undefined && data.length > 0 && data[0] instanceof Game) {
+			setGames(data)
+		}
+	}, [data])
+	const inProgressGames: Game[] = games?.filter((g) => g.gameState instanceof InProgress) ?? []
+	const pastGames: Game[] = games?.filter((g) => g.gameState instanceof Final) ?? []
+	const futureGames: Game[] = games?.filter((g) => g.gameState instanceof Scheduled) ?? []
+	return (
     <List
       isLoading={isLoading}
       searchBarAccessory={<CategoryDropdown currentCategory={currentCategory} onCategoryChange={onCategoryChange} />}

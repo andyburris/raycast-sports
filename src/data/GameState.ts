@@ -7,12 +7,12 @@ export class Scheduled implements GameState {
 }
 
 export class InProgress implements GameState {
-    public constructor(
-        public scheduledDate: Date,
-        public score: Score,
-        public time: string,
-        public homeTeamPossession: boolean | undefined,
-        public situation: string,
+	public constructor(
+		public scheduledDate: Date,
+		public score: Score,
+		public time: string,
+		public homeTeamPossession: boolean | undefined,
+		public situation: string,
     ) {
     }
 }
