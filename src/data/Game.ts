@@ -39,6 +39,10 @@ export class Game {
 		}
 	}
     
+	public readableScheduledDate(): string {
+		return this.gameState.scheduledDate.toLocaleDateString("en-us", dateFormat)
+	}
+
     public description(): string {
         if (this.gameState instanceof InProgress) {
 			if (this.gameState.situation.trim() == "") {
@@ -46,11 +50,21 @@ export class Game {
 			}
 			return `${this.gameState.situation} ∙ ${this.gameState.time}`
         } else if (this.gameState instanceof Final) {
-			return "Final ∙ " + this.gameState.scheduledDate.toLocaleDateString("en-us", dateFormat)
+			return "Final ∙ " + this.readableScheduledDate()
         } else {
-            return this.gameState.scheduledDate.toLocaleDateString("en-us", dateFormat)
+            return this.readableScheduledDate()
         }
     }
+
+	public status(): string {
+		if (this.gameState instanceof InProgress) {
+			return "In Progress"
+		} else if (this.gameState instanceof Final) {
+			return "Final"
+		} else {
+			return "Scheduled"
+		}
+	}
 }
 
 const dateFormat: Intl.DateTimeFormatOptions = { month: "numeric", day: "2-digit", hour: "numeric", minute: "2-digit" }

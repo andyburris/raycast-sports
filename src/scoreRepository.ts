@@ -1,28 +1,24 @@
-import {useFetch} from "@raycast/utils";
-import {UseCachedPromiseReturnType} from "@raycast/utils/dist/types";
 import { Game } from "./data/Game";
 import { Team } from "./data/Team";
 import { GameState, InProgress, Final, Scheduled, Score } from "./data/GameState"
 import { Category, Preset, League } from "./data/League";
+import {LocalStorage} from "@raycast/api";
+import fetch from "node-fetch";
 
 const baseUrl = "http://site.api.espn.com/apis/site/v2/sports"
 
-export function getScoresFor(category: Category): UseCachedPromiseReturnType<Array<Game>, undefined> {
+export function getScoresFor(category: Category): Promise<Array<Game>> {
+
     switch (category) {
       case Preset.Favorites: return getScoresForFavorites();
       default: return getScoresForLeague(category);
     }
 }
 
-function getScoresForLeague(league: League): UseCachedPromiseReturnType<Array<Game>, undefined> {
+function getScoresForLeague(league: League): Promise<Array<Game>> {
     const endpoint = getEndpointForLeague(league)
-    return useFetch(endpoint, {
-		keepPreviousData: true,
-        parseResponse: (response) => {
-            return response.json()
-                .then(obj => (obj["events"] as Array<any>).map(e => parseEvent(e, league)))
-        },
-    })
+	return fetch(endpoint)
+		.then(response => response.json().then(obj => (obj["events"] as Array<any>).map(e => parseEvent(e, league))))
 }
 
 function parseEvent(event: any, league: League): Game {
@@ -108,6 +104,48 @@ export function getEndpointForLeague(league: League) {
     return baseUrl + slug + "/scoreboard";
 }
 
-function getScoresForFavorites(): UseCachedPromiseReturnType<Array<Game>, undefined>{
-    return useFetch(baseUrl)
+export interface StoredFavorite {
+	league: League,
+	id: string,
+}
+
+export function getAllFavorites(): Promise<Array<StoredFavorite>> {
+	return LocalStorage.allItems()
+		.then(items => {
+			const entries: [string, string][] = Object.entries(items)
+			const favorites: StoredFavorite[] = entries
+				.filter(([key, value]) => key.startsWith("favorite-"))
+				.map(([key, value]) => {
+					return { league: key.split("-")[1] as League, id: value }
+				})
+			return favorites
+		})
+}
+
+function getScoresForFavorites(): Promise<Array<Game>>{
+	return getAllFavorites()
+		.then(favorites => {
+			const groupedFavorites = favorites.reduce((acc, favorite) => {
+				const updatedValue = [...(acc.get(favorite.league) ?? []), favorite.id]
+				acc.set(favorite.league, updatedValue)
+				return acc
+			}, new Map<League, Array<string>>)
+			return groupedFavorites
+		})
+		.then(groupedFavorites => {
+			const allLoadedData: Promise<Game[]>[] = Object.values(League).map(league => {
+				if (groupedFavorites.has(league)) {
+					const leagueFavorites = groupedFavorites.get(league) ?? []
+					const leagueData = getScoresForLeague(league)
+					const parsed = leagueData.then(data => {
+						return data?.filter(g => leagueFavorites.includes(g.team1.id) || leagueFavorites.includes(g.team2.id)) ?? []
+					})
+					return parsed
+				}
+			})
+			.filter(d => d != undefined) as Promise<Game[]>[]
+			return Promise
+				.all(allLoadedData)
+				.then(perLeague => perLeague.flat())
+		})
 }
